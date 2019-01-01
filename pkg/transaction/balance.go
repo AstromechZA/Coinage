@@ -9,16 +9,12 @@ import (
 func IsBalanced(transaction *Transaction) (ok bool, err error) {
 	commodityValues := make(map[string]*big.Float)
 
-	for i, t := range transaction.Lines {
-		if t.Value == nil {
-			return false, fmt.Errorf("line %d does not contain a value", i+1)
-		}
-
-		_, ok := commodityValues[t.Value.Commodity]
+	for _, l := range transaction.Lines {
+		_, ok := commodityValues[l.Value.Commodity]
 		if !ok {
-			commodityValues[t.Value.Commodity] = big.NewFloat(0)
+			commodityValues[l.Value.Commodity] = big.NewFloat(0)
 		}
-		commodityValues[t.Value.Commodity].Add(commodityValues[t.Value.Commodity], t.Value.Value)
+		commodityValues[l.Value.Commodity].Add(commodityValues[l.Value.Commodity], l.Value.Value)
 	}
 
 	for commodity, value := range commodityValues {
