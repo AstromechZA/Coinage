@@ -53,91 +53,80 @@ func CheckCommodity(input string) error {
 	return nil
 }
 
-func StringToLine(input string) (*TransactionLine, error) {
-	output := new(TransactionLine)
+var linePattern = regexp.MustCompile(regexp.MustCompile(`\s`).ReplaceAllString(`
+^
+(?P<account>[^\s]+)
+\s+
+(?:
+	(?P<value>[^\s]+)
+	\s+
+)?
+(?P<valuecommodity>[^\s]+)
+(?:
+	\s+
+	for
+	\s+
+	(?P<price>[^\s]+)
+	\s+
+	(?P<pricecommodity>[^\s]+)
+	(?P<each>
+		\s+
+		each
+	)?
+)?
+$
+`, ""))
 
-	parts := regexp.MustCompile(`[\t ]+`).Split(input, -1)
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("expected at least an account name but got none")
+const stlFloatPrecision = 53
+
+func StringToLine(input string) (*TransactionLine, error) {
+	m := linePattern.FindStringSubmatch(input)
+	if m == nil {
+		return nil, fmt.Errorf("did not match the correct line format")
+	}
+	accountName, value, valueCommodity, price, priceCommodity, each := m[1], m[2], m[3], m[4], m[5], m[6]
+
+	output := &TransactionLine{
+		Account: accountName,
 	}
 
-	output.Account, parts = parts[0], parts[1:]
 	if err := CheckAccountName(output.Account); err != nil {
 		return nil, fmt.Errorf("account name is invalid: %s", err)
 	}
 
-	// the line can have no value or price
-	if len(parts) == 0 {
-		return output, nil
-	}
+	output.Value = new(Amount)
 
-	// parse the value as the next component
-	value, _, err := big.ParseFloat(parts[0], 10, 53, big.AwayFromZero)
-	if err != nil {
-		return nil, fmt.Errorf("value `%s` is invalid: %s", parts[0], err)
-	}
-	output.Value = &Amount{
-		Value: value,
-	}
-	parts = parts[1:]
-
-	// must have a commodity if it has a value
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("value is missing a commodity symbol")
-	}
-	if err := CheckCommodity(parts[0]); err != nil {
+	if err := CheckCommodity(valueCommodity); err != nil {
 		return nil, fmt.Errorf("value commodity is invalid: %s", err)
 	}
-	output.Value.Commodity = parts[0]
-	parts = parts[1:]
+	output.Value.Commodity = valueCommodity
 
-	// the line can have price
-	if len(parts) == 0 {
-		return output, nil
-	}
-
-	if parts[0] != "for" {
-		return nil, fmt.Errorf("expected next part to be `for` but got `%s`", parts[0])
-	}
-	parts = parts[1:]
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("expected price value and commodity after `for`")
+	if len(value) != 0 {
+		f, _, err := big.ParseFloat(value, 10, stlFloatPrecision, big.AwayFromZero)
+		if err != nil {
+			return nil, fmt.Errorf("value `%s` is invalid: %s", value, err)
+		}
+		output.Value.Value = f
 	}
 
-	value, _, err = big.ParseFloat(parts[0], 10, 53, big.AwayFromZero)
-	if err != nil {
-		return nil, fmt.Errorf("price `%s` is invalid: %s", parts[0], err)
-	}
-	if value.Sign() == -1 {
-		return nil, fmt.Errorf("price cannot be negative")
-	}
-	output.Price = &Amount{
-		Value: value,
-	}
-	parts = parts[1:]
+	if len(price) != 0 || len(priceCommodity) > 0 {
+		output.Price = new(Amount)
 
-	// must have a commodity if it has a value
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("price is missing a commodity symbol")
-	}
-	if err := CheckCommodity(parts[0]); err != nil {
-		return nil, fmt.Errorf("price commodity is invalid: %s", err)
-	}
-	output.Price.Commodity = parts[0]
-	parts = parts[1:]
+		f, _, err := big.ParseFloat(price, 10, stlFloatPrecision, big.AwayFromZero)
+		if err != nil {
+			return nil, fmt.Errorf("price `%s` is invalid: %s", price, err)
+		}
+		output.Price.Value = f
 
-	// the line can skip the each
-	if len(parts) == 0 {
-		return output, nil
+		if err := CheckCommodity(priceCommodity); err != nil {
+			return nil, fmt.Errorf("price commodity is invalid: %s", err)
+		}
+		output.Price.Commodity = priceCommodity
 	}
 
-	if parts[0] == "each" {
+	if len(each) != 0 {
 		output.Price.Value.Mul(output.Price.Value, output.Value.Value)
-		parts = parts[1:]
 	}
 
-	if len(parts) > 0 {
-		return nil, fmt.Errorf("has unparsed content: `%s`", parts)
-	}
 	return output, nil
 }
