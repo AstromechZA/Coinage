@@ -2,26 +2,25 @@ package transaction
 
 import (
 	"fmt"
-	"math/big"
-)
 
-const errorFloatPrecision = 6
+	"github.com/shopspring/decimal"
+)
 
 // IsFullyBalanced attempts to determine whether the given transaction is balanced
 func IsFullyBalanced(transaction *Transaction) (ok bool, err error) {
-	commodityValues := make(map[string]*big.Float)
+	commodityValues := make(map[string]decimal.Decimal)
 
 	for _, l := range transaction.Lines {
-		_, ok := commodityValues[l.Value.Commodity]
+		vv, ok := commodityValues[l.Value.Commodity]
 		if !ok {
-			commodityValues[l.Value.Commodity] = big.NewFloat(0)
+			vv = decimal.NewFromFloat(0)
 		}
-		commodityValues[l.Value.Commodity].Add(commodityValues[l.Value.Commodity], l.Value.Value)
+		commodityValues[l.Value.Commodity] = vv.Add(*l.Value.Value)
 	}
 
 	for commodity, value := range commodityValues {
-		if value.Cmp(big.NewFloat(0)) != 0 {
-			return false, fmt.Errorf("unbalanced value of %s for %s", value.Text('f', errorFloatPrecision), commodity)
+		if !value.Equal(decimal.Zero) {
+			return false, fmt.Errorf("unbalanced value of %s for %s", value.String(), commodity)
 		}
 	}
 
@@ -29,7 +28,7 @@ func IsFullyBalanced(transaction *Transaction) (ok bool, err error) {
 }
 
 func EnsureBalanced(transaction *Transaction) (changed bool, err error) {
-	commodityValues := make(map[string]*big.Float)
+	commodityValues := make(map[string]decimal.Decimal)
 	commodityBalanceLines := make(map[string]int)
 
 	for i, l := range transaction.Lines {
@@ -40,32 +39,31 @@ func EnsureBalanced(transaction *Transaction) (changed bool, err error) {
 			commodityBalanceLines[l.Value.Commodity] = i
 		} else {
 			if l.Price == nil {
-				l.Price = &Amount{Value: &big.Float{}, Commodity: l.Value.Commodity}
-				l.Price.Value.Copy(l.Value.Value)
+				l.Price = &Amount{Value: l.Value.Value, Commodity: l.Value.Commodity}
 			}
 		}
 
 		if l.Price != nil {
 			vv, ok := commodityValues[l.Price.Commodity]
 			if !ok {
-				commodityValues[l.Price.Commodity] = big.NewFloat(0)
-				vv = commodityValues[l.Price.Commodity]
+				vv = decimal.Zero
 			}
-			vv.Add(vv, l.Price.Value)
+			commodityValues[l.Price.Commodity] = vv.Add(*l.Price.Value)
 		}
 	}
 
 	for commodity, value := range commodityValues {
 		bi, ok := commodityBalanceLines[commodity]
 		if ok {
+			vv := value.Neg()
 			l := transaction.Lines[bi]
-			l.Value.Value = new(big.Float).Neg(value)
-			l.Price = &Amount{Value: new(big.Float).Copy(l.Value.Value), Commodity: l.Value.Commodity}
+			l.Value.Value = &vv
+			l.Price = &Amount{Value: &vv, Commodity: l.Value.Commodity}
 			changed = true
 			continue
 		}
-		if value.Cmp(big.NewFloat(0)) != 0 {
-			return false, fmt.Errorf("unbalanced value of %s for %s", value.Text('f', errorFloatPrecision), commodity)
+		if !value.Equal(decimal.Zero) {
+			return false, fmt.Errorf("unbalanced value of %s for %s", value.String(), commodity)
 		}
 	}
 

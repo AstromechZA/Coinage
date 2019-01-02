@@ -2,9 +2,10 @@ package transaction
 
 import (
 	"fmt"
-	"math/big"
 	"regexp"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 const minCommodityLen = 1
@@ -77,8 +78,6 @@ var linePattern = regexp.MustCompile(regexp.MustCompile(`\s`).ReplaceAllString(`
 $
 `, ""))
 
-const stlFloatPrecision = 53
-
 func StringToLine(input string) (*TransactionLine, error) {
 	m := linePattern.FindStringSubmatch(input)
 	if m == nil {
@@ -102,21 +101,21 @@ func StringToLine(input string) (*TransactionLine, error) {
 	output.Value.Commodity = valueCommodity
 
 	if len(value) != 0 {
-		f, _, err := big.ParseFloat(value, 10, stlFloatPrecision, big.AwayFromZero)
+		d, err := decimal.NewFromString(value)
 		if err != nil {
 			return nil, fmt.Errorf("value `%s` is invalid: %s", value, err)
 		}
-		output.Value.Value = f
+		output.Value.Value = &d
 	}
 
 	if len(price) != 0 || len(priceCommodity) > 0 {
 		output.Price = new(Amount)
 
-		f, _, err := big.ParseFloat(price, 10, stlFloatPrecision, big.AwayFromZero)
+		d, err := decimal.NewFromString(price)
 		if err != nil {
 			return nil, fmt.Errorf("price `%s` is invalid: %s", price, err)
 		}
-		output.Price.Value = f
+		output.Price.Value = &d
 
 		if err := CheckCommodity(priceCommodity); err != nil {
 			return nil, fmt.Errorf("price commodity is invalid: %s", err)
@@ -125,7 +124,8 @@ func StringToLine(input string) (*TransactionLine, error) {
 	}
 
 	if len(each) != 0 {
-		output.Price.Value.Mul(output.Price.Value, output.Value.Value)
+		vv := output.Price.Value.Mul(*output.Value.Value)
+		output.Price.Value = &vv
 	}
 
 	return output, nil

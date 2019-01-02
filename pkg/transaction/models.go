@@ -1,13 +1,14 @@
 package transaction
 
 import (
-	"math/big"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // Amount is a value that is tagged with a currency or commodity name
 type Amount struct {
-	Value     *big.Float
+	Value     *decimal.Decimal
 	Commodity string
 }
 
