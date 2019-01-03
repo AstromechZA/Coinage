@@ -1,3 +1,3 @@
 module github.com/AstromechZA/coinage
 
-require github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
+require github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5

@@ -3,18 +3,24 @@ package decext
 import (
 	"fmt"
 
-	"github.com/shopspring/decimal"
+	"github.com/ericlagergren/decimal"
 )
 
-func NewPtr(value int64, exp int32) *decimal.Decimal {
-	v := decimal.New(value, exp)
-	return &v
+func NewFromString(value string) (*decimal.Big, error) {
+	d, ok := new(decimal.Big).SetString(value)
+	if !ok {
+		return nil, fmt.Errorf("value `%s` is an invalid decimal", value)
+	}
+	if !d.IsFinite() {
+		return nil, fmt.Errorf("value `%s` is not supported", value)
+	}
+	return d, nil
 }
 
-func MustNewFromString(value string) *decimal.Decimal {
-	v, err := decimal.NewFromString(value)
+func MustNewFromString(value string) *decimal.Big {
+	v, err := NewFromString(value)
 	if err != nil {
-		panic(fmt.Errorf("could not convert '%s' to decimal: %s", value, err))
+		panic(err)
 	}
-	return &v
+	return v
 }

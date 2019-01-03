@@ -3,12 +3,12 @@ package transaction
 import (
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/ericlagergren/decimal"
 )
 
 // Amount is a value that is tagged with a currency or commodity name
 type Amount struct {
-	Value     *decimal.Decimal
+	Value     *decimal.Big
 	Commodity string
 }
 

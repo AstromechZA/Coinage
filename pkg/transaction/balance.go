@@ -3,23 +3,23 @@ package transaction
 import (
 	"fmt"
 
-	"github.com/shopspring/decimal"
+	"github.com/ericlagergren/decimal"
 )
 
 // IsFullyBalanced attempts to determine whether the given transaction is balanced
 func IsFullyBalanced(transaction *Transaction) (ok bool, err error) {
-	commodityValues := make(map[string]decimal.Decimal)
+	commodityValues := make(map[string]*decimal.Big)
 
 	for _, l := range transaction.Lines {
 		vv, ok := commodityValues[l.Value.Commodity]
 		if !ok {
-			vv = decimal.NewFromFloat(0)
+			vv = new(decimal.Big)
 		}
-		commodityValues[l.Value.Commodity] = vv.Add(*l.Value.Value)
+		commodityValues[l.Value.Commodity] = vv.Add(vv, l.Value.Value)
 	}
 
 	for commodity, value := range commodityValues {
-		if !value.Equal(decimal.Zero) {
+		if value.Cmp(new(decimal.Big)) != 0 {
 			return false, fmt.Errorf("unbalanced value of %s for %s", value.String(), commodity)
 		}
 	}
@@ -28,7 +28,7 @@ func IsFullyBalanced(transaction *Transaction) (ok bool, err error) {
 }
 
 func EnsureBalanced(transaction *Transaction) (changed bool, err error) {
-	commodityValues := make(map[string]decimal.Decimal)
+	commodityValues := make(map[string]*decimal.Big)
 	commodityBalanceLines := make(map[string]int)
 
 	for i, l := range transaction.Lines {
@@ -46,23 +46,22 @@ func EnsureBalanced(transaction *Transaction) (changed bool, err error) {
 		if l.Price != nil {
 			vv, ok := commodityValues[l.Price.Commodity]
 			if !ok {
-				vv = decimal.Zero
+				vv = new(decimal.Big)
 			}
-			commodityValues[l.Price.Commodity] = vv.Add(*l.Price.Value)
+			commodityValues[l.Price.Commodity] = vv.Add(vv, l.Price.Value)
 		}
 	}
 
 	for commodity, value := range commodityValues {
 		bi, ok := commodityBalanceLines[commodity]
 		if ok {
-			vv := value.Neg()
 			l := transaction.Lines[bi]
-			l.Value.Value = &vv
-			l.Price = &Amount{Value: &vv, Commodity: l.Value.Commodity}
+			l.Value.Value = value.Neg(value)
+			l.Price = &Amount{Value: new(decimal.Big).Copy(l.Value.Value), Commodity: l.Value.Commodity}
 			changed = true
 			continue
 		}
-		if !value.Equal(decimal.Zero) {
+		if value.Cmp(new(decimal.Big)) != 0 {
 			return false, fmt.Errorf("unbalanced value of %s for %s", value.String(), commodity)
 		}
 	}

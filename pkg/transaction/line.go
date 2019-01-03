@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/ericlagergren/decimal"
 )
 
 const minCommodityLen = 1
@@ -101,21 +101,29 @@ func StringToLine(input string) (*TransactionLine, error) {
 	output.Value.Commodity = valueCommodity
 
 	if len(value) != 0 {
-		d, err := decimal.NewFromString(value)
-		if err != nil {
-			return nil, fmt.Errorf("value `%s` is invalid: %s", value, err)
+		d := new(decimal.Big)
+		d, ok := d.SetString(value)
+		if !ok {
+			return nil, fmt.Errorf("value `%s` is an invalid decimal", value)
 		}
-		output.Value.Value = &d
+		if !d.IsFinite() {
+			return nil, fmt.Errorf("value `%s` is not supported", value)
+		}
+		output.Value.Value = d
 	}
 
 	if len(price) != 0 || len(priceCommodity) > 0 {
 		output.Price = new(Amount)
 
-		d, err := decimal.NewFromString(price)
-		if err != nil {
-			return nil, fmt.Errorf("price `%s` is invalid: %s", price, err)
+		d := new(decimal.Big)
+		d, ok := d.SetString(price)
+		if !ok {
+			return nil, fmt.Errorf("price `%s` is an invalid decimal", price)
 		}
-		output.Price.Value = &d
+		if !d.IsFinite() {
+			return nil, fmt.Errorf("price `%s` is not supported", price)
+		}
+		output.Price.Value = d
 
 		if err := CheckCommodity(priceCommodity); err != nil {
 			return nil, fmt.Errorf("price commodity is invalid: %s", err)
@@ -124,8 +132,7 @@ func StringToLine(input string) (*TransactionLine, error) {
 	}
 
 	if len(each) != 0 {
-		vv := output.Price.Value.Mul(*output.Value.Value)
-		output.Price.Value = &vv
+		output.Price.Value.Mul(output.Price.Value, output.Value.Value)
 	}
 
 	return output, nil
