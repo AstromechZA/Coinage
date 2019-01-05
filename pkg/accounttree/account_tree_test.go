@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AstromechZA/coinage/pkg/amount"
 	"github.com/AstromechZA/coinage/pkg/assert"
-	"github.com/AstromechZA/coinage/pkg/transaction"
+	"github.com/AstromechZA/coinage/pkg/core/amount"
+	"github.com/AstromechZA/coinage/pkg/core/transaction"
+	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
 	"github.com/ericlagergren/decimal"
 )
 
@@ -15,9 +16,9 @@ func TestAccountTree_Insert(t *testing.T) {
 	trans := &transaction.Transaction{
 		When:        time.Time{},
 		Description: "Some description",
-		Entries: []*transaction.Entry{
-			{Account: "A:X", Value: *amount.New("USD", decimal.New(100, 0))},
-			{Account: "B:Y", Value: *amount.New("USD", decimal.New(-100, 0))},
+		Entries: []*entry.Entry{
+			{Account: []string{"A", "X"}, Value: *amount.New("USD", decimal.New(100, 0))},
+			{Account: []string{"B", "Y"}, Value: *amount.New("USD", decimal.New(-100, 0))},
 		},
 	}
 	err := at.Insert(trans)

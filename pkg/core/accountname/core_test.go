@@ -28,15 +28,15 @@ func TestCheckAccountNamePart(t *testing.T) {
 
 func TestCheckAccountName(t *testing.T) {
 	for _, c := range []struct {
-		input    string
+		input    []string
 		expected error
 	}{
-		{"Somepart", nil},
-		{"", fmt.Errorf("it is empty")},
-		{"something:with:spaces", nil},
-		{"bad:sep::", fmt.Errorf("part 3 is invalid: it is shorter than 2")},
+		{[]string{"Somepart"}, nil},
+		{[]string{}, fmt.Errorf("it is empty")},
+		{[]string{"something", "with", "spaces"}, nil},
+		{[]string{"bad", "thing", "", ""}, fmt.Errorf("part 3 is invalid: it is shorter than 2")},
 	} {
-		t.Run(c.input, func(t *testing.T) {
+		t.Run(strings.Join(c.input, ":"), func(t *testing.T) {
 			assert.ShouldEqual(t, Check(c.input), c.expected)
 		})
 	}

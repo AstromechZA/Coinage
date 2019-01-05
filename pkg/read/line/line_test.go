@@ -10,7 +10,7 @@ import (
 func TestStringToLine_with_value(t *testing.T) {
 	l, err := StringToEntry("Assets:Cash    100 USD")
 	if assert.ShouldEqual(t, err, nil) {
-		assert.Equal(t, l.Account, "Assets:Cash")
+		assert.Equal(t, l.Account, []string{"Assets", "Cash"})
 		assert.Equal(t, l.Value.Value.String(), "100")
 		assert.Equal(t, string(l.Value.Commodity), "USD")
 	}
@@ -19,7 +19,7 @@ func TestStringToLine_with_value(t *testing.T) {
 func TestStringToLine_with_negative_value(t *testing.T) {
 	l, err := StringToEntry("Assets:Cash    -3.333 £")
 	if assert.ShouldEqual(t, err, nil) {
-		assert.Equal(t, l.Account, "Assets:Cash")
+		assert.Equal(t, l.Account, []string{"Assets", "Cash"})
 		assert.Equal(t, l.Value.Value.String(), "-3.333")
 		assert.Equal(t, string(l.Value.Commodity), "£")
 	}
@@ -28,7 +28,7 @@ func TestStringToLine_with_negative_value(t *testing.T) {
 func TestStringToLine_with_price(t *testing.T) {
 	l, err := StringToEntry("Assets:Cash    3.333 £  for 10 GBP")
 	if assert.ShouldEqual(t, err, nil) {
-		assert.Equal(t, l.Account, "Assets:Cash")
+		assert.Equal(t, l.Account, []string{"Assets", "Cash"})
 		assert.Equal(t, l.Value.Value.String(), "3.333")
 		assert.Equal(t, string(l.Value.Commodity), "£")
 		assert.Equal(t, l.Price.Value.String(), "10")
@@ -39,7 +39,7 @@ func TestStringToLine_with_price(t *testing.T) {
 func TestStringToLine_with_each_price(t *testing.T) {
 	l, err := StringToEntry("Assets:Cash    3.333 £  for 10 GBP each")
 	if assert.ShouldEqual(t, err, nil) {
-		assert.Equal(t, l.Account, "Assets:Cash")
+		assert.Equal(t, l.Account, []string{"Assets", "Cash"})
 		assert.Equal(t, l.Value.Value.String(), "3.333")
 		assert.Equal(t, string(l.Value.Commodity), "£")
 		assert.Equal(t, l.Price.Value.String(), "33.330")

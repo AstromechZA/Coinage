@@ -5,8 +5,8 @@ import (
 
 	"github.com/ericlagergren/decimal"
 
-	"github.com/AstromechZA/coinage/pkg/amount"
 	"github.com/AstromechZA/coinage/pkg/assert"
+	"github.com/AstromechZA/coinage/pkg/core/amount"
 )
 
 func TestNew(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/ericlagergren/decimal"
 
-	"github.com/AstromechZA/coinage/pkg/amount"
-	"github.com/AstromechZA/coinage/pkg/commodity"
+	"github.com/AstromechZA/coinage/pkg/core/amount"
+	"github.com/AstromechZA/coinage/pkg/core/commodity"
 )
 
 // MultiAmount is a value that is spread over multiple commodities

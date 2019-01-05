@@ -3,7 +3,6 @@ package accountname
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 const BadCharacterSet = `[[:space:]:\p{C}\p{Z}]`
@@ -24,12 +23,11 @@ func CheckPart(input string) error {
 	return nil
 }
 
-func Check(input string) error {
+func Check(input []string) error {
 	if len(input) == 0 {
 		return fmt.Errorf("it is empty")
 	}
-	parts := strings.Split(input, ":")
-	for i, p := range parts {
+	for i, p := range input {
 		if err := CheckPart(p); err != nil {
 			return fmt.Errorf("part %d is invalid: %s", i+1, err)
 		}

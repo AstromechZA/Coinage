@@ -3,15 +3,13 @@ package line
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
-	"github.com/AstromechZA/coinage/pkg/transaction"
-
-	"github.com/AstromechZA/coinage/pkg/accountname"
-
-	"github.com/AstromechZA/coinage/pkg/amount"
+	"github.com/AstromechZA/coinage/pkg/core/accountname"
+	"github.com/AstromechZA/coinage/pkg/core/amount"
+	"github.com/AstromechZA/coinage/pkg/core/commodity"
+	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
 	"github.com/AstromechZA/coinage/pkg/decext"
-
-	"github.com/AstromechZA/coinage/pkg/commodity"
 )
 
 var linePattern = regexp.MustCompile(regexp.MustCompile(`\s`).ReplaceAllString(`
@@ -38,15 +36,15 @@ var linePattern = regexp.MustCompile(regexp.MustCompile(`\s`).ReplaceAllString(`
 $
 `, ""))
 
-func StringToEntry(input string) (*transaction.Entry, error) {
+func StringToEntry(input string) (*entry.Entry, error) {
 	m := linePattern.FindStringSubmatch(input)
 	if m == nil {
 		return nil, fmt.Errorf("did not match the correct Line format")
 	}
 	accountName, value, valueCommodity, price, priceCommodity, each := m[1], m[2], commodity.Commodity(m[3]), m[4], commodity.Commodity(m[5]), m[6]
 
-	output := &transaction.Entry{
-		Account: accountName,
+	output := &entry.Entry{
+		Account: strings.Split(accountName, ":"),
 	}
 
 	if err := accountname.Check(output.Account); err != nil {
@@ -84,4 +82,12 @@ func StringToEntry(input string) (*transaction.Entry, error) {
 	}
 
 	return output, nil
+}
+
+func MustStringToEntry(input string) *entry.Entry {
+	t, err := StringToEntry(input)
+	if err != nil {
+		panic(fmt.Errorf("could not create entry from '%s'", err))
+	}
+	return t
 }

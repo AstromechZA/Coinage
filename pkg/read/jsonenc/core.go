@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/AstromechZA/coinage/pkg/read/line"
-
+	"github.com/AstromechZA/coinage/pkg/core/transaction"
+	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
 	"github.com/AstromechZA/coinage/pkg/read"
-	"github.com/AstromechZA/coinage/pkg/transaction"
+	"github.com/AstromechZA/coinage/pkg/read/line"
 )
 
 type raw struct {
@@ -29,7 +29,7 @@ func DecodeTransaction(reader io.Reader) (*transaction.Transaction, error) {
 	out := &transaction.Transaction{
 		Description: tmp.Description,
 		Labels:      tmp.Labels,
-		Entries:     make([]*transaction.Entry, len(tmp.Entries)),
+		Entries:     make([]*entry.Entry, len(tmp.Entries)),
 	}
 
 	if out.When, err = read.ParseDateOrTime(tmp.When); err != nil {
@@ -63,7 +63,7 @@ func DecodeTransactions(reader io.Reader) ([]*transaction.Transaction, error) {
 		out[i] = &transaction.Transaction{
 			Description: tt.Description,
 			Labels:      tt.Labels,
-			Entries:     make([]*transaction.Entry, len(tt.Entries)),
+			Entries:     make([]*entry.Entry, len(tt.Entries)),
 		}
 
 		if out[i].When, err = read.ParseDateOrTime(tt.When); err != nil {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/ericlagergren/decimal"
 
-	"github.com/AstromechZA/coinage/pkg/commodity"
+	"github.com/AstromechZA/coinage/pkg/core/commodity"
 
 	"github.com/AstromechZA/coinage/pkg/decext"
 

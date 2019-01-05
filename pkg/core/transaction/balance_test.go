@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ericlagergren/decimal"
+	"github.com/AstromechZA/coinage/pkg/core/transactionction/entry"
 
-	"github.com/AstromechZA/coinage/pkg/amount"
+	"github.com/AstromechZA/coinage/pkg/read/line"
+
 	"github.com/AstromechZA/coinage/pkg/assert"
-	"github.com/AstromechZA/coinage/pkg/decext"
 )
 
 func TestEnsureBalanced_basic(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "To", Value: *amount.NewNil("GBP")},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("To		GBP"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -26,11 +26,11 @@ func TestEnsureBalanced_basic(t *testing.T) {
 
 func TestEnsureBalanced_multiple_no_change(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "From", Value: *amount.New("ZAR", decext.MustNewFromString("0.2"))},
-			{Account: "To", Value: *amount.New("GBP", decext.MustNewFromString("0.2"))},
-			{Account: "To", Value: *amount.New("ZAR", decext.MustNewFromString("-0.2"))},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("From		0.2 ZAR"),
+			line.MustStringToEntry("To		0.2 GBP"),
+			line.MustStringToEntry("To		-0.2 ZAR"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -40,10 +40,10 @@ func TestEnsureBalanced_multiple_no_change(t *testing.T) {
 
 func TestEnsureBalanced_addition_of_values(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "To", Value: *amount.NewNil("GBP")},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("To		GBP"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -54,11 +54,11 @@ func TestEnsureBalanced_addition_of_values(t *testing.T) {
 
 func TestEnsureBalanced_multiple_commodities(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "From", Value: *amount.New("ZAR", decext.MustNewFromString("0.2"))},
-			{Account: "To", Value: *amount.NewNil("GBP")},
-			{Account: "To", Value: *amount.NewNil("ZAR")},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("From		0.2 ZAR"),
+			line.MustStringToEntry("To		GBP"),
+			line.MustStringToEntry("To		ZAR"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -70,9 +70,9 @@ func TestEnsureBalanced_multiple_commodities(t *testing.T) {
 
 func TestEnsureBalanced_bad_balance(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "To", Value: *amount.New("GBP", decext.MustNewFromString("0.3"))},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("To		0.3 GBP"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -82,10 +82,10 @@ func TestEnsureBalanced_bad_balance(t *testing.T) {
 
 func TestEnsureBalanced_bad_wildcards(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "From", Value: *amount.New("GBP", decext.MustNewFromString("-0.2"))},
-			{Account: "To", Value: *amount.NewNil("GBP")},
-			{Account: "To2", Value: *amount.NewNil("GBP")},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("From		-0.2 GBP"),
+			line.MustStringToEntry("To		GBP"),
+			line.MustStringToEntry("To		GBP"),
 		},
 	}
 	changed, err := transaction.Balance()
@@ -95,10 +95,10 @@ func TestEnsureBalanced_bad_wildcards(t *testing.T) {
 
 func TestEnsureBalanced_stock_example(t *testing.T) {
 	transaction := &Transaction{
-		Entries: []*Entry{
-			{Account: "Stock", Value: *amount.New("ORCL", decext.MustNewFromString("100")), Price: *amount.New("$", decimal.New(50, 0))},
-			{Account: "Stock", Value: *amount.New("AAPL", decext.MustNewFromString("100")), Price: *amount.New("$", decimal.New(30, 0))},
-			{Account: "Cash", Value: *amount.NewNil("$")},
+		Entries: []*entry.Entry{
+			line.MustStringToEntry("Assets:Stock		100 ORCL for 50 $"),
+			line.MustStringToEntry("Assets:Stock		100 AAPL for 30 $"),
+			line.MustStringToEntry("Assets:Cash		$"),
 		},
 	}
 	changed, err := transaction.Balance()
