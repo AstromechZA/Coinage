@@ -18,25 +18,20 @@ type raw struct {
 	Entries     []string          `json:"entries"`
 }
 
-func DecodeTransaction(reader io.Reader) (*transaction.Transaction, error) {
-	var tmp raw
+func decodeRaw(r *raw) (*transaction.Transaction, error) {
 	var err error
 
-	if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
-		return nil, err
-	}
-
 	out := &transaction.Transaction{
-		Description: tmp.Description,
-		Labels:      tmp.Labels,
-		Entries:     make([]*entry.Entry, len(tmp.Entries)),
+		Description: r.Description,
+		Labels:      r.Labels,
+		Entries:     make([]*entry.Entry, len(r.Entries)),
 	}
 
-	if out.When, err = read.ParseDateOrTime(tmp.When); err != nil {
+	if out.When, err = read.ParseDateOrTime(r.When); err != nil {
 		return nil, err
 	}
 
-	for i, e := range tmp.Entries {
+	for i, e := range r.Entries {
 		out.Entries[i], err = line.StringToEntry(e)
 		if err != nil {
 			return nil, err
@@ -46,8 +41,15 @@ func DecodeTransaction(reader io.Reader) (*transaction.Transaction, error) {
 	if _, err = out.Balance(); err != nil {
 		return nil, fmt.Errorf("transaction does not balance: %s", err)
 	}
-
 	return out, nil
+}
+
+func DecodeTransaction(reader io.Reader) (*transaction.Transaction, error) {
+	tmp := new(raw)
+	if err := json.NewDecoder(reader).Decode(tmp); err != nil {
+		return nil, err
+	}
+	return decodeRaw(tmp)
 }
 
 func DecodeTransactions(reader io.Reader) ([]*transaction.Transaction, error) {
@@ -60,25 +62,9 @@ func DecodeTransactions(reader io.Reader) ([]*transaction.Transaction, error) {
 
 	out := make([]*transaction.Transaction, len(tmp))
 	for i, tt := range tmp {
-		out[i] = &transaction.Transaction{
-			Description: tt.Description,
-			Labels:      tt.Labels,
-			Entries:     make([]*entry.Entry, len(tt.Entries)),
-		}
-
-		if out[i].When, err = read.ParseDateOrTime(tt.When); err != nil {
+		out[i], err = decodeRaw(&tt)
+		if err != nil {
 			return nil, err
-		}
-
-		for i, e := range tt.Entries {
-			out[i].Entries[i], err = line.StringToEntry(e)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if _, err = out[i].Balance(); err != nil {
-			return nil, fmt.Errorf("transaction %d does not balance: %s", i, err)
 		}
 	}
 	return out, nil
