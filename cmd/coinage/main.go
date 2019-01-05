@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/AstromechZA/coinage/pkg/core/commodity"
@@ -48,6 +49,15 @@ func mainInner() error {
 		}
 		return false
 	})
+	fmt.Println(strings.Repeat("-", 30))
+	keys := make([]string, 0, len(accounts.TreeTotals))
+	for c := range accounts.TreeTotals {
+		keys = append(keys, string(c))
+	}
+	sort.Strings(keys)
+	for _, c := range keys {
+		fmt.Printf("%20s\n", accounts.TreeTotals[commodity.Commodity(c)].String()+" "+c)
+	}
 
 	return nil
 }

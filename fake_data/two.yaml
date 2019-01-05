@@ -1,0 +1,6 @@
+when: 2019-01-03
+description: Withdrawing Dollars in San Fransisco
+entries:
+  - Assets:Cash             -50 £
+  - Expenses:BankFee        2 £
+  - Assets:Cash             100 $ for 48 £
