@@ -10,8 +10,4 @@ type Entry struct {
 	// Value of this Line in the account
 	// Value.Value can be nil when this has not been fully balanced yet
 	Value amount.Amount
-
-	// Price that this Line "cost" to balance (used to translate between currencies)
-	// Price can be nil when this has not been fully balanced yet
-	Price amount.Amount
 }

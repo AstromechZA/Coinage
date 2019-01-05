@@ -90,20 +90,3 @@ func TestEnsureBalanced_bad_wildcards(t *testing.T) {
 	assert.Equal(t, changed, false)
 	assert.Equal(t, err, fmt.Errorf("line 3: multiple no-value lines for commodity `GBP`"))
 }
-
-func TestEnsureBalanced_stock_example(t *testing.T) {
-	transaction := &Transaction{
-		Entries: []*entry.Entry{
-			line.MustStringToEntry("Assets:Stock		100 ORCL for 50 $"),
-			line.MustStringToEntry("Assets:Stock		100 AAPL for 30 $"),
-			line.MustStringToEntry("Assets:Cash		$"),
-		},
-	}
-	changed, err := transaction.Balance()
-	assert.Equal(t, err, nil)
-	assert.ShouldEqual(t, changed, true)
-	assert.ShouldEqual(t, transaction.Entries[2].Value.Value.String(), "-80")
-	assert.ShouldEqual(t, string(transaction.Entries[2].Value.Commodity), "$")
-	assert.ShouldEqual(t, transaction.Entries[2].Price.Value.String(), "80")
-	assert.ShouldEqual(t, string(transaction.Entries[2].Price.Commodity), "$")
-}

@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/AstromechZA/coinage/pkg/decext"
+
 	"github.com/AstromechZA/coinage/pkg/core/commodity"
 
 	"github.com/AstromechZA/coinage/pkg/core/transaction"
@@ -39,20 +41,23 @@ func mainInner() error {
 
 	accounts.DepthFirstPreOrder([]string{}, func(account []string, node *tree.AccountTree) bool {
 		if len(account) > 0 {
-			keys := make([]commodity.Commodity, 0, len(node.TreeTotals))
+			keys := make([]string, 0, len(node.TreeTotals))
 			for c := range node.TreeTotals {
-				keys = append(keys, c)
+				keys = append(keys, string(c))
 			}
+			sort.Strings(keys)
 			for _, c := range keys {
-				fmt.Printf("%20s %s%s\n", node.TreeTotals[c].String()+" "+string(c), strings.Repeat("  ", len(account)), account[len(account)-1])
+				fmt.Printf("%20s %s%s\n", node.TreeTotals[commodity.Commodity(c)].String()+" "+c, strings.Repeat("  ", len(account)), account[len(account)-1])
 			}
 		}
 		return false
 	})
 	fmt.Println(strings.Repeat("-", 30))
 	keys := make([]string, 0, len(accounts.TreeTotals))
-	for c := range accounts.TreeTotals {
-		keys = append(keys, string(c))
+	for c, v := range accounts.TreeTotals {
+		if !decext.IsZero(v) {
+			keys = append(keys, string(c))
+		}
 	}
 	sort.Strings(keys)
 	for _, c := range keys {
