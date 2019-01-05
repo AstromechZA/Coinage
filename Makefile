@@ -43,9 +43,9 @@ test: ## run unit tests and generate coverage reports
 	go vet ./...
 	@echo
 
-.PHONY: precoverage coverage postcoverage
+.PHONY: precoverage coverage
 precoverage: ; @echo $(shell date): Running coverage tests..
-coverage: precoverage $(COVERAGE_FILES) postcoverage ## run tests and output test coverage information
+coverage: precoverage $(COVERAGE_FILES) ## run tests and output test coverage information
 
 .PHONY: dev
 dev: $(BINARY_NAME) ## build development binary for the local platform

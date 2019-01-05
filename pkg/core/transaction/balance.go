@@ -9,7 +9,7 @@ import (
 
 	"github.com/AstromechZA/coinage/pkg/decext"
 
-	"github.com/AstromechZA/coinage/pkg/multiamount"
+	"github.com/AstromechZA/coinage/pkg/core/multiamount"
 )
 
 func (transaction *Transaction) Balance() (changed bool, err error) {

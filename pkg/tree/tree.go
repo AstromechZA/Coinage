@@ -1,11 +1,11 @@
-package accounttree
+package tree
 
 import (
 	"fmt"
 
+	"github.com/AstromechZA/coinage/pkg/core/multiamount"
 	"github.com/AstromechZA/coinage/pkg/core/transaction"
 	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
-	"github.com/AstromechZA/coinage/pkg/multiamount"
 )
 
 type EntryRef struct {
