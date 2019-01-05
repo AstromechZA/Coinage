@@ -2,6 +2,7 @@ package tree
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/AstromechZA/coinage/pkg/core/multiamount"
 	"github.com/AstromechZA/coinage/pkg/core/transaction"
@@ -44,6 +45,7 @@ func (a *AccountTree) Insert(t *transaction.Transaction) error {
 
 func (a *AccountTree) insertLine(t *transaction.Transaction, entry *entry.Entry, accountParts []string) error {
 	if len(accountParts) == 0 {
+		a.TreeTotals.Add(entry.Value.Commodity, entry.Value.Value)
 		a.Totals.Add(entry.Value.Commodity, entry.Value.Value)
 		a.Entries = append(a.Entries, EntryRef{Entry: entry, Transaction: t})
 	} else {
@@ -80,6 +82,12 @@ func (a *AccountTree) DepthFirst(
 	if preOrder != nil && preOrder(prefix, a) {
 		return true
 	}
+
+	accounts := make([]string, 0, len(a.Accounts))
+	for n := range a.Accounts {
+		accounts = append(accounts, n)
+	}
+	sort.Strings(accounts)
 	for n, acc := range a.Accounts {
 		name := append(prefix, n)
 		if acc.DepthFirst(name, preOrder, inOrder, postOrder) {

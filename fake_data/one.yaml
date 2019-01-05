@@ -1,0 +1,49 @@
+when: 2019-01-01
+description: Opening Balances
+entries:
+- Assets:Cash                       24.35 £
+- Assets:Monzo:Card       2567.05 £
+- Assets:Monzo:Pots:Savings         400 £
+- Assets:Stocks                     23 GOOG
+- Income:OpeningBalances            £
+- Income:OpeningBalances            GOOG
+
+---
+
+when: 2019-01-01
+description: Groceries
+labels:
+  shop: Aldi
+entries:
+- Expenses:Groceries        112.43 £
+- Assets:Cash               £
+
+---
+
+when: 2019-01-01
+description: Coffee at Pret
+labels:
+  shop: Pret A Manger
+entries:
+  - Expenses:Food_&_Drink:Coffee      3.20 £
+  - Assets:Monzo:Card                 £
+
+---
+
+when: 2019-01-02
+description: Spotify Subscription
+labels:
+  service: spotify.com
+  recurring: true
+entries:
+  - Expenses:Entertainment            11 £
+  - Assets:Monzo:Card                 £
+
+---
+
+when: 2019-01-03
+description: Withdrawing Dollars in San Fransisco
+entries:
+  - Assets:Cash             100 $ for 48 £
+  - Expenses:BankFee        2 £
+  - Assets:Cash             £
