@@ -3,7 +3,7 @@ package transaction
 import (
 	"time"
 
-	"github.com/AstromechZA/coinage/pkg/core/transactionction/entry"
+	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
 )
 
 // Transaction represents a single transaction that occurred

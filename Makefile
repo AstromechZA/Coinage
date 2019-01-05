@@ -37,7 +37,10 @@ version: ## print current version information
 .PHONY: test
 test: ## run unit tests and generate coverage reports
 	@echo $(shell date): Running unit tests..
-	time go test -v ./...
+	go test -v ./...
+	@echo
+	@echo $(shell date): Vetting code..
+	go vet ./...
 	@echo
 
 .PHONY: precoverage coverage postcoverage

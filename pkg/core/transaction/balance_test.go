@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/AstromechZA/coinage/pkg/core/transactionction/entry"
-
-	"github.com/AstromechZA/coinage/pkg/read/line"
-
 	"github.com/AstromechZA/coinage/pkg/assert"
+	"github.com/AstromechZA/coinage/pkg/core/transaction/entry"
+	"github.com/AstromechZA/coinage/pkg/read/line"
 )
 
 func TestEnsureBalanced_basic(t *testing.T) {
