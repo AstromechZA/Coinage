@@ -9,10 +9,10 @@ import (
 func NewFromString(value string) (*decimal.Big, error) {
 	d, ok := new(decimal.Big).SetString(value)
 	if !ok {
-		return nil, fmt.Errorf("value `%s` is an invalid decimal", value)
+		return nil, fmt.Errorf("`%s` is an invalid decimal", value)
 	}
 	if !d.IsFinite() {
-		return nil, fmt.Errorf("value `%s` is not supported", value)
+		return nil, fmt.Errorf("`%s` is not supported", value)
 	}
 	return d, nil
 }

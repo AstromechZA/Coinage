@@ -3,27 +3,21 @@ package transaction
 import (
 	"time"
 
-	"github.com/ericlagergren/decimal"
+	"github.com/AstromechZA/coinage/pkg/amount"
 )
 
-// Amount is a value that is tagged with a currency or commodity name
-type Amount struct {
-	Value     *decimal.Big
-	Commodity string
-}
-
-// TransactionLine is a line from a transaction
-type TransactionLine struct {
-	// Account is the source or destination this line refers to
+// Entry is a Line from a transaction
+type Entry struct {
+	// Account is the source or destination this Line refers to
 	Account string
 
-	// Value of this line
-	// Value can be nil when this has not been fully balanced yet
-	Value *Amount
+	// Value of this Line in the account
+	// Value.Value can be nil when this has not been fully balanced yet
+	Value amount.Amount
 
-	// Price that this line "cost"
-	// Value can be nil when this has not been fully balanced yet
-	Price *Amount
+	// Price that this Line "cost" to balance (used to translate between currencies)
+	// Price can be nil when this has not been fully balanced yet
+	Price amount.Amount
 }
 
 // Transaction represents a single transaction that occurred
@@ -37,6 +31,6 @@ type Transaction struct {
 	// Labels is a user-specified key value set
 	Labels map[string]string
 
-	// Lines is the list of items in the transaction
-	Lines []TransactionLine
+	// Entries is the list of items in the transaction
+	Entries []*Entry
 }
